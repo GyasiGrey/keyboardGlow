@@ -5,11 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CUE.NET.Devices.Generic.Enums;
+using CUE.NET.Devices.Generic;
 
 namespace KeyboardGlow
 {
     class Program
     {
+        private static float currentMultiplier = 1.0f;
+
         static void Main(string[] args)
         {
             CueSDK.Initialize();
@@ -18,31 +22,38 @@ namespace KeyboardGlow
 
             CorsairKeyboard keyboard = CueSDK.KeyboardSDK;
 
-            bool goingUp = true;
-            byte green = 0;
+            bool done = false;
 
-            while(true)
+            List<CorsairLedId> wasd = new List<CorsairLedId>();
+            wasd = new List<CorsairLedId>();
+            wasd.Add(CorsairLedId.W);
+            wasd.Add(CorsairLedId.A);
+            wasd.Add(CorsairLedId.S);
+            wasd.Add(CorsairLedId.D);
+
+            CorsairColor wasdColor = new CorsairColor(255, 0, 0);
+            CorsairColor mainColor = new CorsairColor(0, 64, 255);
+            CorsairColor otherColor = new CorsairColor(255, 255, 255);
+
+            while (!done)
             {
-                if(goingUp)
+                currentMultiplier -= 0.05f;
+                if (currentMultiplier <= 0.0f)
                 {
-                    green++;
-                    if(green >= 255)
-                    {
-                        goingUp = false;
-                    }
-                }
-                else
-                {
-                    green--;
-                    if(green <= 0)
-                    {
-                        goingUp = true;
-                    }
+                    currentMultiplier = 0.0f;
+                    done = true;
                 }
 
-                keyboard['Q'].Color = new CUE.NET.Devices.Generic.CorsairColor(0, green, 0);
-                System.Threading.Thread.Sleep(1);
+                foreach(CorsairLedId led in wasd)
+                {
+                    keyboard[led].Color = new CorsairColor((byte)(currentMultiplier * wasdColor.R), (byte)(currentMultiplier * wasdColor.G), (byte)(currentMultiplier * wasdColor.B));
+                }
+
+            
+                System.Threading.Thread.Sleep(64);
             }
+
+            System.Threading.Thread.Sleep(5000);
         }
     }
 }
